@@ -1,43 +1,36 @@
-const list = document.querySelector('ul');
-const input = document.querySelector('input');
-const apiUrl = 'http://localhost:3001';
+const BACKEND_ROOT_URL = "http://localhost:3001";
+import { Todos } from "./class/todo.js";
+
+const list = document.querySelector("ul");
+const input = document.querySelector("input");
 
 const renderTask = (task) => {
     const newItem = document.createElement('li');
-    newItem.textContent = task.description;
+    newItem.textContent = task.getText();
     newItem.classList.add('list-group-item');
     list.appendChild(newItem);
 };
 
+const todos = new Todos(BACKEND_ROOT_URL);
+
 const getTasks = () => {
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(task => renderTask(task));
+    todos.getTasks()
+        .then(tasks => {
+            tasks.forEach(task => renderTask(task));
             input.disabled = false;
         })
         .catch(error => console.error(error));
 };
 
-const saveTask = (task) => {
-    return fetch(`${apiUrl}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ description: task })
-    });
-};
-
 input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        const task = input.value.trim();
-        if (task) {
-            saveTask(task)
-                .then(response => response.json())
-                .then(data => {
-                    renderTask(data);
+        const description = input.value.trim();
+        if (description) {
+            todos.addTask(description)
+                .then(task => {
+                    renderTask(task);
                     input.value = '';
+                    input.focus();
                 })
                 .catch(error => console.error(error));
         }
