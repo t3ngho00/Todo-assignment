@@ -1,59 +1,57 @@
-
-import { Task } from './task.js';
+import { Task } from "./task.js";
 
 class Todos {
-    #apiUrl;
-    #tasks;
+  #apiUrl;
+  #tasks;
 
-    constructor(apiUrl) {
-        this.#apiUrl = apiUrl;
-        this.#tasks = [];
-    }
+  constructor(apiUrl) {
+    this.#apiUrl = apiUrl;
+    this.#tasks = [];
+  }
 
-    getTasks() {
-        return new Promise((resolve, reject) => {
-            fetch(this.#apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const tasks = this.#readJson(data);
-                    resolve(tasks);
-                })
-                .catch(error => reject(error));
-        });
+  getTasks = async () => {
+    try {
+      const response = await fetch(this.#apiUrl);
+      const data = await response.json();
+      return this.#readJson(data);
+    } catch (error) {
+      throw error;
     }
+  };
 
-    #readJson(data) {
-        const tasks = [];
-        data.forEach(item => {
-            const task = new Task(item.id, item.description);
-            tasks.push(task);
-        });
-        return tasks;
+  removeTask = async (id) => {
+    try {
+      await fetch(this.#apiUrl + "/delete/" + id, {
+        method: "DELETE",
+      });
+      this.#tasks = this.#tasks.filter((task) => task.id !== id);
+      return id;
+    } catch (error) {
+      throw error;
     }
+  };
 
-    #addTaskToArray(task) {
-        this.#tasks.push(task);
-        return task;
-    }
+  #readJson(data) {
+    return data.map((item) => new Task(item.id, item.description));
+  }
 
-    addTask(description) {
-        return new Promise((resolve, reject) => {
-            fetch(`${this.#apiUrl}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ description })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    const task = new Task(data.id, data.description);
-                    const addedTask = this.#addTaskToArray(task);
-                    resolve(addedTask);
-                })
-                .catch(error => reject(error));
-        });
+  addTask = async (description) => {
+    try {
+      const response = await fetch(`${this.#apiUrl}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ description }),
+      });
+      const data = await response.json();
+      const task = new Task(data.id, data.description);
+      this.#tasks.push(task);
+      return task;
+    } catch (error) {
+      throw error;
     }
+  };
 }
 
 export { Todos };
