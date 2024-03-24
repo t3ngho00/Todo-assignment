@@ -1,0 +1,13 @@
+### GET Tasks
+GET http://localhost:3001/
+
+### Add Task
+POST http://localhost:3001/
+Content-Type: application/json
+
+{
+  "description": "Learn React"
+}
+
+### Delete Task
+DELETE http://localhost:3001/delete/1 HTTP/1.1
